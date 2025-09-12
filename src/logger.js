@@ -18,6 +18,10 @@ if (options.level === 'debug') {
 
 const logger = pino(options);
 
+if (options.level === 'debug') {
+  logger.debug({ env: process.env }, 'Loaded environment variables');
+}
+
 // Create and export a Pino Logger instance:
 // https://getpino.io/#/docs/api?id=logger
 module.exports = logger;
