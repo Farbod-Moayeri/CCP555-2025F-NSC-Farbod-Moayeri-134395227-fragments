@@ -2,6 +2,9 @@
 
 const express = require('express');
 
+// Our authentication middleware
+const { authenticate } = require('../auth');
+
 // version and author from package.json
 const { version, author } = require('../../package.json');
 
@@ -14,6 +17,8 @@ const router = express.Router();
 const apiRoutes = require('./api');
 
 router.use(`/v1`, apiRoutes);
+
+router.use(`/v1`, authenticate(), require('./api'));
 
 /**
  * Define a simple health check route. If the server is running
