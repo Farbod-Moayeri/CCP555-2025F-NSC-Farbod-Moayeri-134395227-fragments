@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test:watch": "jest -c jest.config.js --runInBand --watch --",
-    "test": "cross-env NODE_OPTIONS=--require=dotenv/config dotenv_config_path=./debug.env jest -c jest.config.js --runInBand --",
+    "test": "jest -c jest.config.js --runInBand --",
     "coverage": "jest -c jest.config.js --runInBand --coverage",
     "lint": "eslint \"./src/**/*.js\" \"tests/**/*.js\"",
     "start": "node src/index.js",
