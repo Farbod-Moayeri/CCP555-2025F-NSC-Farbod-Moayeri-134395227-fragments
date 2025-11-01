@@ -31,10 +31,15 @@ RUN npm install
 COPY ./src ./src
 
 # Start the container by running our server
-CMD npm start
+CMD ["npm", "start"]
 
 # We run our service on port 8080
 EXPOSE 8080
 
 # docker build -t fragments:latest .
 # docker run --rm --name fragments --env-file env.jest -e LOG_LEVEL=debug -p 8080:8080 -d fragments:latest
+# docker login --username <username> --password <password>
+# docker push username/fragments
+# docker build -t farbod678/fragments:latest -t farbod678/fragments:lab-6 -t farbod678/fragments:git .
+# docker pull farbod678/fragments
+# docker run --rm farbod678/fragments
