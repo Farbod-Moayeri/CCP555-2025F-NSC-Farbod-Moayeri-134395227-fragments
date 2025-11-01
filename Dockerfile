@@ -43,3 +43,4 @@ EXPOSE 8080
 # docker build -t farbod678/fragments:latest -t farbod678/fragments:lab-6 -t farbod678/fragments:git .
 # docker pull farbod678/fragments
 # docker run --rm farbod678/fragments
+# hadolint Dockerfile
