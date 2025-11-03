@@ -23,6 +23,8 @@ WORKDIR /app
 # that `app` is a directory and not a file.
 COPY package*.json /app/
 COPY tests/.htpasswd /app/tests/.htpasswd
+# Copying htpasswd again
+COPY tests/.htpasswd /app/.htpasswd
 
 # Install node dependencies defined in package-lock.json
 RUN npm install
