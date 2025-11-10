@@ -44,5 +44,22 @@ EXPOSE 8080
 # docker push username/fragments
 # docker build -t farbod678/fragments:latest -t farbod678/fragments:lab-6 -t farbod678/fragments:git .
 # docker pull farbod678/fragments
-# docker run --rm farbod678/fragments
+# docker run --rm -p 8080:8080 farbod678/fragments:main 
 # hadolint Dockerfile
+
+# --- Stage 1: Builder ---
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY ./src ./src
+
+# --- Stage 2: Runtime ---
+FROM node:22-alpine
+WORKDIR /app
+ENV NODE_ENV=production PORT=8080
+COPY --from=build /app /app
+COPY tests/.htpasswd /app/.htpasswd
+EXPOSE 8080
+CMD ["node", "src/index.js"]
+

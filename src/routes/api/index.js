@@ -2,14 +2,14 @@
 const express = require('express');
 const contentType = require('content-type');
 const Fragment = require('../../model/fragment');
-const { authenticate } = require('../../auth'); // top-level auth exported from src/auth/index.js
+const { authenticate } = require('../../auth');
 const postHandler = require('./post');
 const getHandler = require('./get');
 const getByIdHandler = require('./getById');
+const getInfoHandler = require('./getInfo');
 
 const router = express.Router();
 
-// raw body parser factory
 const rawBody = () =>
   express.raw({
     inflate: true,
@@ -19,15 +19,14 @@ const rawBody = () =>
         const { type } = contentType.parse(req);
         return Fragment.isSupportedType(type);
       } catch (e) {
-        console.log(e);
         return false;
       }
     },
   });
 
-// Public routes that still require authentication
 router.get('/fragments', authenticate(), getHandler);
 router.post('/fragments', authenticate(), rawBody(), postHandler);
 router.get('/fragments/:id', authenticate(), getByIdHandler);
+router.get('/fragments/:id/info', authenticate(), getInfoHandler);
 
 module.exports = router;

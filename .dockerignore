@@ -1,13 +1,27 @@
 # dockerignore
+# --- Version control & IDE ---
+.git/
+.gitignore
 .github/
 .vscode/
+
+# --- Build/test/dev artifacts ---
 coverage/
 node_modules/
 tests/
 !tests/.htpasswd
+npm-debug.log*
+.DS_Store
+
+# --- Environment/config files ---
 .env
+env.*
 eslint.config.mjs
-.git/
-.gitignore
 .prettier*
 jest*
+
+# --- Documentation ---
+README.md
+
+# --- Optional: uncomment if CI builds image ---
+# Dockerfile

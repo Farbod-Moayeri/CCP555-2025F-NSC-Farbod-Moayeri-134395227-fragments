@@ -2,6 +2,8 @@
 const { v4: uuidv4 } = require('uuid');
 const db = require('./data');
 const logger = require('../logger');
+const MarkdownIt = require('markdown-it');
+const md = new MarkdownIt();
 
 class Fragment {
   constructor({ id, ownerId, type, size, created, updated }) {
@@ -13,24 +15,16 @@ class Fragment {
     this.updated = updated;
   }
 
+  // Support text/* and application/json
   static isSupportedType(type) {
     if (!type) return false;
-    // For assignment 1, only text/plain is required.
-    return type === 'text/plain';
+    return type.startsWith('text/') || type === 'application/json';
   }
 
-  // Create a new fragment metadata and store in DB
   static async create({ ownerId, type, size = 0 }) {
     const id = uuidv4();
     const now = new Date().toISOString();
-    const meta = {
-      id,
-      ownerId,
-      type,
-      size,
-      created: now,
-      updated: now,
-    };
+    const meta = { id, ownerId, type, size, created: now, updated: now };
     await db.writeFragment(ownerId, meta);
     logger.info({ id, ownerId, type }, 'Fragment metadata created');
     return new Fragment(meta);
@@ -38,20 +32,17 @@ class Fragment {
 
   static async byId(ownerId, id) {
     const meta = await db.readFragment(ownerId, id);
-    if (!meta) return null;
-    return new Fragment(meta);
+    return meta ? new Fragment(meta) : null;
   }
 
   static async list(ownerId) {
     const metas = await db.listFragments(ownerId);
-    // Return only ids per assignment spec (but many tests may check for metadata)
     return metas || [];
   }
 
   async saveData(buffer) {
     if (!Buffer.isBuffer(buffer)) throw new Error('saveData expects a Buffer');
     await db.writeFragmentData(this.ownerId, this.id, buffer);
-    // update metadata size and updated
     const meta = await db.readFragment(this.ownerId, this.id);
     if (meta) {
       this.size = meta.size;
@@ -61,11 +52,36 @@ class Fragment {
   }
 
   async getData() {
-    const data = await db.readFragmentData(this.ownerId, this.id);
-    return data;
+    return await db.readFragmentData(this.ownerId, this.id);
   }
 
-  // Serialize for API responses - include expected properties
+  // Markdown conversion
+  async getConverted(ext) {
+    const data = await this.getData();
+    if (!data) return null;
+
+    const text = data.toString();
+
+    // Markdown -> HTML
+    if (this.type === 'text/markdown' && ext === 'html') {
+      return {
+        convertedType: 'text/html',
+        convertedData: Buffer.from(md.render(text)),
+      };
+    }
+
+    // JSON pretty output
+    if (this.type === 'application/json' && ext === 'txt') {
+      return {
+        convertedType: 'text/plain',
+        convertedData: Buffer.from(JSON.stringify(JSON.parse(text), null, 2)),
+      };
+    }
+
+    // If no conversion supported
+    return null;
+  }
+
   toJSON() {
     return {
       id: this.id,
