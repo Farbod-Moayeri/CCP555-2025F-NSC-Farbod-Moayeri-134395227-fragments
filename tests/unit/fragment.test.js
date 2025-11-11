@@ -4,9 +4,9 @@ const Fragment = require('../../src/model/fragment');
 describe('Fragment class', () => {
   const ownerId = 'hashed-user';
 
-  test('isSupportedType() only accepts text/plain', () => {
-    expect(Fragment.isSupportedType('text/plain')).toBe(true);
-    expect(Fragment.isSupportedType('application/json')).toBe(false);
+  test('isSupportedType() accepts text or application/json', () => {
+    expect(Fragment.isSupportedType('text/')).toBe(true);
+    expect(Fragment.isSupportedType('application/json')).toBe(true);
   });
 
   test('create() makes a new fragment and byId() retrieves it', async () => {

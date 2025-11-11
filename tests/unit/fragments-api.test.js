@@ -9,7 +9,7 @@ describe('Fragments API', () => {
     const res = await request(app)
       .post('/v1/fragments')
       .auth(...authUser())
-      .set('Content-Type', 'application/json')
+      .set('Content-Type', 'image/png')
       .send(JSON.stringify({ msg: 'nope' }));
     expect(res.statusCode).toBe(415);
   });

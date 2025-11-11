@@ -36,8 +36,10 @@ class Fragment {
   }
 
   static async list(ownerId) {
+    // Ensure db.listFragments cannot cause an undefined result to bubble up.
+    // Always return an array (possibly empty).
     const metas = await db.listFragments(ownerId);
-    return metas || [];
+    return Array.isArray(metas) ? metas : [];
   }
 
   async saveData(buffer) {

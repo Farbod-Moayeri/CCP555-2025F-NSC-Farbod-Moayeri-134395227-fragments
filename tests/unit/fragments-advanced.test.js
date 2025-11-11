@@ -1,10 +1,20 @@
 // tests/unit/fragments-advanced.test.js
 const request = require('supertest');
 const app = require('../../src/app');
-
+// const { AWS_USER_PASSWORD } = process.env;
+// const authUser = () => ['fmoayeri2@myseneca.ca', AWS_USER_PASSWORD];
 const authUser = () => ['user1@email.com', 'password1'];
 
 describe('Advanced Fragments API', () => {
+  beforeAll(async () => {
+    // create a fragment so it exists before GET tests
+    await request(app)
+      .post('/v1/fragments')
+      .set('Content-Type', 'text/plain')
+      .auth(...authUser())
+      .send('hello world');
+  });
+
   test('GET /v1/fragments?expand=1 returns metadata objects', async () => {
     const res = await request(app)
       .get('/v1/fragments?expand=1')
