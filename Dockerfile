@@ -22,6 +22,8 @@ WORKDIR /app
 # files into /app. NOTE: the trailing `/` on `/app/`, which tells Docker
 # that `app` is a directory and not a file.
 COPY package*.json /app/
+
+RUN mkdir -p /app/tests
 COPY tests/.htpasswd /app/tests/.htpasswd
 # Copying htpasswd again
 COPY tests/.htpasswd /app/.htpasswd
@@ -59,7 +61,8 @@ FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production PORT=8080
 COPY --from=build /app /app
-COPY tests/.htpasswd /app/.htpasswd
+# Ensure the 'tests' directory exists and copy the file inside it
+RUN mkdir -p /app/tests
+COPY tests/.htpasswd /app/tests/.htpasswd 
 EXPOSE 8080
 CMD ["node", "src/index.js"]
-
