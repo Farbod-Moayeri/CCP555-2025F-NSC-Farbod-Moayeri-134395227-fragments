@@ -27,7 +27,7 @@ app.use(helmet());
 // Use CORS middleware so we can make requests across origins
 app.use(
   cors({
-    origin: 'http://localhost:1234',
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   })
