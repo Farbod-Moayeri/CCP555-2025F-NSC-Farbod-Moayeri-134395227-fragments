@@ -23,6 +23,16 @@ module.exports = async (req, res) => {
       return res.status(400).json(createErrorResponse(400, 'missing body'));
     }
 
+    if (parsedType === 'application/json') {
+      try {
+        // Try to parse the buffer as a string, then as JSON
+        JSON.parse(req.body.toString());
+      } catch (err) {
+        logger.warn({ err }, 'Invalid JSON content submitted');
+        return res.status(400).json(createErrorResponse(400, 'body is not valid JSON'));
+      }
+    }
+
     const ownerId = req.user.id;
     const buffer = req.body;
 
