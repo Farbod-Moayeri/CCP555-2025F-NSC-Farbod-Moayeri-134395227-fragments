@@ -17,4 +17,5 @@ module.exports = {
   readFragmentData: async (ownerId, id) => db.readFragmentData(ownerId, id),
   writeFragmentData: async (ownerId, id, buffer) => db.writeFragmentData(ownerId, id, buffer),
   listFragments: async (ownerId) => db.listFragments(ownerId),
+  deleteFragment: async (ownerId, id) => db.deleteFragment(ownerId, id),
 };

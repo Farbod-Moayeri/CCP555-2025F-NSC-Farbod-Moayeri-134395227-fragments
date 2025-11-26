@@ -1,0 +1,47 @@
+{
+  "family": "fragments-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+
+  // Used by ECS to pull the image from ECR at deploy time
+  "executionRoleArn": "arn:aws:iam::891377040819:role/ecsTaskExecutionRole",
+
+  // Used by the running container to access AWS resources (S3!)
+  "taskRoleArn": "arn:aws:iam::891377040819:role/ecsTaskRole",
+
+  "containerDefinitions": [
+    {
+      "name": "fragments",
+      "image": "public.ecr.aws/docker/library/node:18",
+      "essential": true,
+
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+
+      "environment": [
+        {
+          "name": "LOG_LEVEL",
+          "value": "info"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "AWS_S3_BUCKET_NAME",
+          "value": "farbod.moayeri-fragments"
+        }
+      ]
+    }
+  ]
+}

@@ -68,6 +68,13 @@ class MemoryDB {
     // Return array of metadata objects
     return Array.from(userMap.values()).map((e) => e.metadata);
   }
+
+  async deleteFragment(ownerId, id) {
+    const userMap = this.store.get(ownerId);
+    if (!userMap) return false;
+
+    return userMap.delete(id);
+  }
 }
 
 module.exports = new MemoryDB();

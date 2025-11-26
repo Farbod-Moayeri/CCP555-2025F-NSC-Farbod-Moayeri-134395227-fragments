@@ -30,6 +30,11 @@ class Fragment {
     return new Fragment(meta);
   }
 
+  async delete() {
+    await db.deleteFragment(this.ownerId, this.id);
+    return true;
+  }
+
   static async byId(ownerId, id) {
     const meta = await db.readFragment(ownerId, id);
     return meta ? new Fragment(meta) : null;

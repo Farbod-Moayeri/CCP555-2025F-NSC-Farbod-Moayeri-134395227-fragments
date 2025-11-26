@@ -7,6 +7,7 @@ const postHandler = require('./post');
 const getHandler = require('./get');
 const getByIdHandler = require('./getById');
 const getInfoHandler = require('./getInfo');
+const deleteHandler = require('./delete');
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ const rawBody = () =>
     },
   });
 
+router.delete('/fragments/:id', authenticate(), deleteHandler);
 router.get('/fragments', authenticate(), getHandler);
 router.post('/fragments', authenticate(), rawBody(), postHandler);
 router.get('/fragments/:id', authenticate(), getByIdHandler);
