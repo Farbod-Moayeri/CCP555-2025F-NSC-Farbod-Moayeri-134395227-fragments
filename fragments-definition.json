@@ -5,10 +5,8 @@
   "cpu": "256",
   "memory": "512",
 
-  // Used by ECS to pull the image from ECR at deploy time
   "executionRoleArn": "arn:aws:iam::891377040819:role/ecsTaskExecutionRole",
 
-  // Used by the running container to access AWS resources (S3!)
   "taskRoleArn": "arn:aws:iam::891377040819:role/ecsTaskRole",
 
   "containerDefinitions": [
