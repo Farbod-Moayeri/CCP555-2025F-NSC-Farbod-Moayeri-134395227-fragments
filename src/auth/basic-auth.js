@@ -16,7 +16,7 @@ logger.info('Using HTTP Basic Auth for auth');
 
 module.exports.strategy = () =>
   // For our Passport authentication strategy, we'll look for a
-  // username/password pair in the Authorization header.
+  // username/password pair in the Authorization header.d
   authPassport(
     auth.basic({
       file: process.env.HTPASSWD_FILE,
