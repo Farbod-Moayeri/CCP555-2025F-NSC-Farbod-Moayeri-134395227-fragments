@@ -12,7 +12,17 @@ module.exports = async (req, res) => {
     const metas = (await Fragment.list(ownerId)) || [];
 
     // If expand, return metadata objects; otherwise return IDs
-    const fragments = expand ? metas : metas.map((m) => (m && m.id) || null);
+    let fragments;
+    if (expand) {
+      fragments = metas; // AWS returns metadata objects here
+    } else {
+      // If AWS returned IDs directly, just return them
+      if (typeof metas[0] === 'string') {
+        fragments = metas;
+      } else {
+        fragments = metas.map((m) => m.id);
+      }
+    }
 
     // Remove nulls if any (defensive)
     const cleanFragments = fragments.filter((f) => f !== null && f !== undefined);
