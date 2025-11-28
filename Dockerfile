@@ -65,4 +65,4 @@ COPY --from=build /app /app
 RUN mkdir -p /app/tests
 COPY tests/.htpasswd /app/tests/.htpasswd 
 EXPOSE 8080
-CMD ["node", "src/index.js"]
+CMD ["npm", "start"]
