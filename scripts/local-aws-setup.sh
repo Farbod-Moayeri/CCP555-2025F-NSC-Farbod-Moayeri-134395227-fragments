@@ -11,33 +11,20 @@ echo "AWS env configured."
 
 
 ##################################
-# Wait for LocalStack S3 service
+# Create S3 Bucket (no waiting)
 ##################################
 
-echo "Waiting for LocalStack (S3 + DynamoDB) on port 4566..."
-
-until awslocal s3 ls >/dev/null 2>&1; do
-    echo "Still waiting..."
-    sleep 3
-done
-
-echo "LocalStack is READY!"
-echo "Creating S3 bucket..."
-
-
-##################################
-# Create S3 Bucket
-##################################
+echo "Creating S3 bucket (no wait)..."
 
 aws --endpoint-url=http://localhost:4566 \
     s3api create-bucket --bucket fragments 2>/dev/null || true
 
 
 ##################################
-# Create DynamoDB Table (LocalStack)
+# Create DynamoDB Table (no waiting)
 ##################################
 
-echo "Creating DynamoDB table on LocalStack..."
+echo "Creating DynamoDB table (no wait)..."
 
 aws --endpoint-url=http://localhost:4566 \
     dynamodb create-table \
@@ -51,9 +38,6 @@ aws --endpoint-url=http://localhost:4566 \
         --billing-mode PAY_PER_REQUEST \
     2>/dev/null || true
 
-aws --endpoint-url=http://localhost:4566 dynamodb wait table-exists \
-    --table-name fragments
+# No "dynamodb wait" here — completely removed
 
-echo "DynamoDB table ready."
-
-echo "Local AWS setup complete!"
+echo "Local AWS setup complete! (no waiting performed)"
