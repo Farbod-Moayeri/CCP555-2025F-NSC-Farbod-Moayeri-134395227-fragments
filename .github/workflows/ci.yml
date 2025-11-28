@@ -29,36 +29,42 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: npm
 
       - name: Install Node deps
         run: npm install
 
-      # Use REAL AWS credentials
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
+      - name: Build + Start Compose
+        run: docker compose up -d --build
 
-      - name: Build fragments image
-        run: docker build -t fragments-ci .
-
-      - name: Run fragments container
+      # Wait for LocalStack
+      - name: Wait for LocalStack
         run: |
-          docker run \
-            -d \
-            --name fragments \
-            -p 8080:8080 \
-            -e HTPASSWD_FILE="/app/tests/.htpasswd" \
-            -e AWS_REGION=us-east-1 \
-            -e AWS_S3_BUCKET_NAME=farbod.moayeri-fragments \
-            -e AWS_DYNAMODB_TABLE_NAME=fragments \
-            fragments-ci
+          echo "Waiting for LocalStack..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4566/health | grep "\"initialized\": true"; then
+              echo "LocalStack ready!"
+              break
+            fi
+            echo "Still waiting..."
+            sleep 2
+          done
 
+      # Fix permissions
+      - name: Make setup script executable
+        run: chmod +x ./scripts/local-aws-setup.sh
+
+      # Setup mock AWS infrastructure
+      - name: Run Local AWS Setup
+        run: ./scripts/local-aws-setup.sh
+
+      # Wait for the API container
       - name: Wait for API
         run: |
           echo "Waiting for API..."
@@ -71,7 +77,7 @@ jobs:
             sleep 2
           done
 
-      - name: Run Hurl Integration Tests
+      - name: Run Integration Tests
         run: npm run test:integration
 
   docker-hub:

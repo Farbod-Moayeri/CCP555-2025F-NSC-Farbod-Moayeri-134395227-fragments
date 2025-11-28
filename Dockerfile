@@ -13,6 +13,7 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 # [URL documentation]
 ENV NPM_CONFIG_COLOR=false
 
+# Path for htpasswd file
 ENV HTPASSWD_FILE=/app/.htpasswd
 
 # Use /app as our working directory
@@ -23,9 +24,11 @@ WORKDIR /app
 # that `app` is a directory and not a file.
 COPY package*.json /app/
 
+# Ensure tests folder exists for htpasswd
 RUN mkdir -p /app/tests
+
+# Copy .htpasswd to both expected locations
 COPY tests/.htpasswd /app/tests/.htpasswd
-# Copying htpasswd again
 COPY tests/.htpasswd /app/.htpasswd
 
 # Install node dependencies defined in package-lock.json
@@ -48,27 +51,3 @@ EXPOSE 8080
 # docker pull farbod678/fragments
 # docker run --rm -p 8080:8080 farbod678/fragments:main 
 # hadolint Dockerfile
-
-# --- Stage 1: Builder ---
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY ./src ./src
-
-# --- Stage 2: Runtime ---
-FROM node:22-alpine
-WORKDIR /app
-ENV NODE_ENV=production PORT=8080 HTPASSWD_FILE=/app/.htpasswd
-COPY --from=build /app /app
-
-# Ensure the 'tests' directory exists and copy the file inside it
-RUN mkdir -p /app/tests
-COPY tests/.htpasswd /app/tests/.htpasswd 
-
-# IMPORTANT: Copy htpasswd to where the app actually expects it
-COPY tests/.htpasswd /app/.htpasswd
-
-EXPOSE 8080
-CMD ["npm", "start"]
-
