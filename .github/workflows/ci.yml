@@ -46,7 +46,7 @@ jobs:
       # ---------------------------
       - name: Run fragments container
         run: |
-          docker run -d \
+          docker run \
             --name fragments \
             -p 8080:8080 \
             -e LOG_LEVEL=silent \
