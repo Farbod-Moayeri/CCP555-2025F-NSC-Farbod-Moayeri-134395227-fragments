@@ -59,10 +59,16 @@ COPY ./src ./src
 # --- Stage 2: Runtime ---
 FROM node:22-alpine
 WORKDIR /app
-ENV NODE_ENV=production PORT=8080
+ENV NODE_ENV=production PORT=8080 HTPASSWD_FILE=/app/.htpasswd
 COPY --from=build /app /app
+
 # Ensure the 'tests' directory exists and copy the file inside it
 RUN mkdir -p /app/tests
 COPY tests/.htpasswd /app/tests/.htpasswd 
+
+# IMPORTANT: Copy htpasswd to where the app actually expects it
+COPY tests/.htpasswd /app/.htpasswd
+
 EXPOSE 8080
 CMD ["npm", "start"]
+
