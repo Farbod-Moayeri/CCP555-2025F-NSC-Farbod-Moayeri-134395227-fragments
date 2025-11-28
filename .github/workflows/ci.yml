@@ -32,6 +32,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
@@ -43,39 +44,25 @@ jobs:
       - name: Build + Start Compose
         run: docker compose up -d --build
 
-      # Wait for LocalStack
-      - name: Wait for LocalStack
-        run: |
-          echo "Waiting for LocalStack..."
-          for i in {1..30}; do
-            if curl -s http://localhost:4566/_localstack/health | grep "\"running\""; then
-              echo "LocalStack is ready!"
-              break
-            fi
-            echo "Still waiting..."
-            sleep 2
-          done
-
-      # Fix permissions
       - name: Make setup script executable
         run: chmod +x ./scripts/local-aws-setup.sh
 
-      # Setup mock AWS infrastructure
-      - name: Run Local AWS Setup
+      - name: Run Local AWS Setup (LocalStack)
         run: ./scripts/local-aws-setup.sh
 
-      # Wait for the API container
       - name: Wait for API
         run: |
           echo "Waiting for API..."
           for i in {1..30}; do
             if curl -s http://localhost:8080/ >/dev/null; then
               echo "API is ready!"
-              break
+              exit 0
             fi
             echo "Still waiting..."
             sleep 2
           done
+          echo "API did not start in time"
+          exit 1
 
       - name: Run Integration Tests
         run: npm run test:integration

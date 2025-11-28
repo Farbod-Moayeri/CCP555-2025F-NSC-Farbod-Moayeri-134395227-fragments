@@ -10,13 +10,16 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
 
       AWS_REGION: us-east-1
-
-      # LocalStack endpoints
       AWS_S3_ENDPOINT_URL: http://localstack:4566
       AWS_DYNAMODB_ENDPOINT_URL: http://localstack:4566
 
       AWS_S3_BUCKET_NAME: fragments
       AWS_DYNAMODB_TABLE_NAME: fragments
+
+      # REQUIRED for LocalStack authentication
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_SESSION_TOKEN: test
 
     ports:
       - '8080:8080'
@@ -29,10 +32,7 @@ services:
       - '4566:4566'
     environment:
       SERVICES: s3,dynamodb
-      DEBUG: 1
       DEFAULT_REGION: us-east-1
+      DEBUG: 1
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-
-volumes:
-  localstack_data:
