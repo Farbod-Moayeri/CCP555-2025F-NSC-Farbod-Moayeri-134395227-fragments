@@ -48,8 +48,8 @@ jobs:
         run: |
           echo "Waiting for LocalStack..."
           for i in {1..30}; do
-            if curl -s http://localhost:4566/health | grep "\"initialized\": true"; then
-              echo "LocalStack ready!"
+            if curl -s http://localhost:4566/_localstack/health | grep "\"running\""; then
+              echo "LocalStack is ready!"
               break
             fi
             echo "Still waiting..."
