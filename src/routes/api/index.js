@@ -23,6 +23,7 @@ const rawBody = () =>
         const { type } = contentType.parse(req);
         return Fragment.isSupportedType(type);
       } catch (e) {
+        console.log(e);
         return false;
       }
     },
