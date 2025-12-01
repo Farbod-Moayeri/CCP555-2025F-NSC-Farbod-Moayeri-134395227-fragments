@@ -25,7 +25,6 @@ module.exports = async (req, res) => {
 
     if (parsedType === 'application/json') {
       try {
-        // Try to parse the buffer as a string, then as JSON
         JSON.parse(req.body.toString());
       } catch (err) {
         logger.warn({ err }, 'Invalid JSON content submitted');

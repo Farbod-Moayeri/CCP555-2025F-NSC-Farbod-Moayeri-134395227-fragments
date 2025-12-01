@@ -44,7 +44,7 @@ CMD ["npm", "start"]
 EXPOSE 8080
 
 # docker build -t fragments:latest .
-# docker run --rm --name fragments --env-file env.jest -e LOG_LEVEL=debug -p 8080:8080 -d fragments:latest
+# docker run --rm --name fragments --env-file .env -e LOG_LEVEL=debug -p 8080:8080 fragments:latest
 # docker login --username <username> --password <password>
 # docker push username/fragments
 # docker build -t farbod678/fragments:latest -t farbod678/fragments:lab-6 -t farbod678/fragments:git .

@@ -1,39 +1,41 @@
 // src/routes/api/getById.js
+const path = require('path');
 const Fragment = require('../../model/fragment');
 const { createErrorResponse } = require('../../response');
 const logger = require('../../logger');
 
 module.exports = async (req, res) => {
   try {
+    // ✅ use hashed user id, not the whole req.user object
     const ownerId = req.user.id;
-    const idParam = req.params.id;
-    const [id, ext] = idParam.split('.');
+    const idWithExt = req.params.id;
+
+    // Extract extension if any, e.g., "123.html" -> id="123", ext="html"
+    const ext = path.extname(idWithExt).substring(1);
+    const id = ext ? idWithExt.slice(0, -(ext.length + 1)) : idWithExt;
 
     const fragment = await Fragment.byId(ownerId, id);
     if (!fragment) {
       return res.status(404).json(createErrorResponse(404, 'fragment not found'));
     }
 
-    // Check for conversion
+    let data;
+    let type = fragment.type;
+
     if (ext) {
+      // Handle conversions (.html, .jpg, etc.)
       const converted = await fragment.getConverted(ext);
-      if (converted) {
-        res.setHeader('Content-Type', converted.convertedType + '; charset=utf-8');
-        return res.status(200).send(converted.convertedData);
+      if (!converted) {
+        return res.status(415).json(createErrorResponse(415, 'unsupported conversion'));
       }
-      return res.status(415).json(createErrorResponse(415, 'unsupported conversion'));
+      data = converted.convertedData;
+      type = converted.convertedType;
+    } else {
+      // Raw fragment data
+      data = await fragment.getData();
     }
 
-    const data = await fragment.getData();
-
-    // Return JSON pretty for application/json
-    if (fragment.type === 'application/json') {
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.status(200).send(data.toString());
-    }
-
-    // Default: text/*
-    res.setHeader('Content-Type', fragment.type + '; charset=utf-8');
+    res.setHeader('Content-Type', `${type}; charset=utf-8`);
     return res.status(200).send(data);
   } catch (err) {
     logger.error({ err }, 'Error getting fragment by id');

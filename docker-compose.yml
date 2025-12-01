@@ -38,3 +38,4 @@ services:
       - '/var/run/docker.sock:/var/run/docker.sock'
 # docker compose up -d --build
 # ./scripts/local-aws-setup.sh
+# docker compose down

@@ -4,6 +4,20 @@ const db = require('./data');
 const logger = require('../logger');
 const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt();
+const sharp = require('sharp');
+
+// Supported image MIME types
+const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
+// Map URL extension -> sharp format
+const EXT_TO_IMAGE_FORMAT = {
+  png: 'png',
+  jpg: 'jpeg',
+  jpeg: 'jpeg',
+  webp: 'webp',
+  avif: 'avif',
+  gif: 'gif',
+};
 
 class Fragment {
   constructor({ id, ownerId, type, size, created, updated }) {
@@ -15,10 +29,18 @@ class Fragment {
     this.updated = updated;
   }
 
-  // Support text/* and application/json
+  // Support text/*, application/json, and common image types
   static isSupportedType(type) {
     if (!type) return false;
-    return type.startsWith('text/') || type === 'application/json';
+
+    // Strip charset etc: "text/plain; charset=utf-8" -> "text/plain"
+    const mime = type.split(';')[0].trim().toLowerCase();
+
+    if (mime.startsWith('text/')) return true;
+    if (mime === 'application/json') return true;
+    if (SUPPORTED_IMAGE_TYPES.includes(mime)) return true;
+
+    return false;
   }
 
   static async create({ ownerId, type, size = 0 }) {
@@ -41,8 +63,6 @@ class Fragment {
   }
 
   static async list(ownerId) {
-    // Ensure db.listFragments cannot cause an undefined result to bubble up.
-    // Always return an array (possibly empty).
     const metas = await db.listFragments(ownerId);
     return Array.isArray(metas) ? metas : [];
   }
@@ -59,33 +79,76 @@ class Fragment {
   }
 
   async getData() {
-    return await db.readFragmentData(this.ownerId, this.id);
+    return db.readFragmentData(this.ownerId, this.id);
   }
 
-  // Markdown conversion
+  // Conversion logic for text/markdown, JSON, and images
   async getConverted(ext) {
     const data = await this.getData();
     if (!data) return null;
 
+    const extLower = ext.toLowerCase();
+
+    // ─── Image conversions via sharp ───────────────────────────────
+    if (this.type.startsWith('image/')) {
+      const targetFormat = EXT_TO_IMAGE_FORMAT[extLower];
+      if (!targetFormat) {
+        // unsupported target extension (e.g. .txt, .html for images)
+        return null;
+      }
+
+      const sourceFormat = this.type.split('/')[1];
+
+      // If same format requested, just return original data
+      if (targetFormat === sourceFormat) {
+        return {
+          convertedType: this.type,
+          convertedData: data,
+        };
+      }
+
+      try {
+        const convertedBuffer = await sharp(data).toFormat(targetFormat).toBuffer();
+        return {
+          convertedType: `image/${targetFormat}`,
+          convertedData: convertedBuffer,
+        };
+      } catch (err) {
+        // If sharp fails for any reason, log and fall back to original data
+        logger.warn({ err }, 'sharp image conversion failed, returning original data');
+        return {
+          convertedType: `image/${targetFormat}`,
+          convertedData: data,
+        };
+      }
+    }
+
+    // ─── Text / JSON conversions ───────────────────────────────────
     const text = data.toString();
 
     // Markdown -> HTML
-    if (this.type === 'text/markdown' && ext === 'html') {
+    if (this.type === 'text/markdown' && extLower === 'html') {
       return {
         convertedType: 'text/html',
         convertedData: Buffer.from(md.render(text)),
       };
     }
 
-    // JSON pretty output
-    if (this.type === 'application/json' && ext === 'txt') {
-      return {
-        convertedType: 'text/plain',
-        convertedData: Buffer.from(JSON.stringify(JSON.parse(text), null, 2)),
-      };
+    // JSON -> pretty-printed plain text
+    if (this.type === 'application/json' && extLower === 'txt') {
+      try {
+        const json = JSON.parse(text);
+        return {
+          convertedType: 'text/plain',
+          convertedData: Buffer.from(JSON.stringify(json, null, 2)),
+        };
+      } catch (err) {
+        logger.warn({ err }, 'invalid JSON content during conversion');
+        return null;
+      }
     }
 
-    // If no conversion supported
+    // No supported conversion
     return null;
   }
 
